@@ -11,11 +11,15 @@
   To run the code:-
   git clone https://github.com/21Ansh/pupiltracker.git
   cd pupiltracker
+  
   git checkout face_pose
+  
   mkdir build; cd build; cmake ..; make -j8
   Now,
   cd build/cmd
+  
   ./PupilTrackerCmd [video port number eg.:- 1/0]
+  
 Adding face pose computation using PnP method. To extract the facial landmark dlib library is used.
 
 Here I am providing sample camera calibration file. If you want to calibrate your camera follow the standard camera calibration prodecure provided in opencv as give below.
