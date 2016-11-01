@@ -9,7 +9,9 @@
   -TBB
   
   To run the code:-
+  
   git clone https://github.com/21Ansh/pupiltracker.git
+  
   cd pupiltracker
   
   git checkout face_pose
