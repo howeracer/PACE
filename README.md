@@ -1,8 +1,11 @@
 # pupiltracker
   
   Dependencies:-
+
   -Opencv 2.4.9
+  
   -Boost
+  
   -TBB
   
   To run the code:-
