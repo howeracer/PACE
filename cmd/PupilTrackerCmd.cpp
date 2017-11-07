@@ -46,7 +46,7 @@ const static cv::Point3f P3D_NOSE(21.0, 0., -48.0);
 const static cv::Point3f P3D_STOMMION(10.0, 0., -75.0);
 const static cv::Point3f P3D_MENTON(0., 0.,-133.0);
 
-enum 
+enum
 {
      NOSE=30,
      RIGHT_EYE=36,
@@ -69,19 +69,20 @@ string filename = "../../camera.yml";
 
 int main(int argc, char* argv[])
 {
-   if(argc <= 1) 
+   if(argc <= 1)
    {
     std::cerr<<"Use ./DisplayImage dev_port_no boad_size"<<endl;
     return 1;
    }
-   
+
    ////
    FILE *file;
    std::ofstream ofs;
    //  ofs.open("test.txt",std::ofstream::out | std::ofstream::app);
+
+   ofs.open("/dev/ttyACM0",std::ofstream::out |std::ofstream::app);
    
-     ofs.open("/dev/ttyACM0",std::ofstream::out |std::ofstream::app);
-  
+/* commenting out output stream
    if (!ofs.is_open())
   {
     //  ofs << "lorem ipsum";
@@ -90,11 +91,11 @@ int main(int argc, char* argv[])
   std:cerr << "Stream did not open" << std::endl;
     return -1;
     }
-
+commenting out output stream */
 
    /*
    struct termios port_settings;
-   
+
    cfsetispeed(&port_settings, B115200);    // set baud rates
    cfsetospeed(&port_settings, B115200);
 
@@ -102,7 +103,7 @@ int main(int argc, char* argv[])
    port_settings.c_cflag &= ~CSTOPB;
    port_settings.c_cflag &= ~CSIZE;
    port_settings.c_cflag |= CS8;
-	
+
    tcsetattr(fd, TCSANOW, &port_settings);    // apply the settings to the port
    */
    // ofs.close();
@@ -118,8 +119,8 @@ int main(int argc, char* argv[])
     int video_source;
     std::istringstream video_sourceCmd(argv[1]);
      // Check if it is indeed a number
-     if(!(video_sourceCmd >> video_source)){ cout<<"wrong video port no.!!"<<endl;return 1;}  
-    
+     if(!(video_sourceCmd >> video_source)){ cout<<"wrong video port no.!!"<<endl;return 1;}
+
      cv::VideoCapture cap(video_source);
      // cv::VideoCapture cap(1);
      //cout<<video_source;
@@ -130,14 +131,14 @@ int main(int argc, char* argv[])
     cv::Mat intrinsics, distortion;
     fs["Camera_Matrix"] >> intrinsics;
     fs["Distortion_Coefficients"] >> distortion;
-    cout<<" dis"<<intrinsics.at<double>(2, 3)<<endl;    
+    cout<<" dis"<<intrinsics.at<double>(2, 3)<<endl;
     // close the input file
     fs.release();
 
     std::vector<cv::Point3f> head_points;
     cv::Mat rvec = cv::Mat(cv::Size(3,1), CV_64F);
     CvMat r;
-    cv::Mat tvec = cv::Mat(cv::Size(3,1), CV_64F);  
+    cv::Mat tvec = cv::Mat(cv::Size(3,1), CV_64F);
 
     head_points.push_back(P3D_SELLION);
     head_points.push_back(P3D_RIGHT_EYE);
@@ -147,7 +148,7 @@ int main(int argc, char* argv[])
     head_points.push_back(P3D_MENTON);
     head_points.push_back(P3D_NOSE);
     head_points.push_back(P3D_STOMMION);
-    
+
     //  fprintf(file,"%s","dsad");
     //fclose(file);
     //  fprintf(file,"%c",'c');
@@ -158,9 +159,9 @@ int main(int argc, char* argv[])
     {
       //  ofs<<'c';
       //  ofs<<endl;
-      
+
         cap.set( CV_CAP_PROP_FRAME_WIDTH, 640 );
-        cap.set( CV_CAP_PROP_FRAME_HEIGHT, 480 );        
+        cap.set( CV_CAP_PROP_FRAME_HEIGHT, 480 );
         //image_window win;
         cv::Mat left,right;
         // Load face detection and pose estimation models.
@@ -207,7 +208,7 @@ int main(int argc, char* argv[])
         int _right_sidex=0,_right_sidey=0,right_sidex,right_sidey;
         int _left_sidex=0,_left_sidey=0,left_sidex,left_sidey;
         int _mouth_rightx=0,_mouth_righty=0,mouth_rightx,mouth_righty;
-        int _mouth_leftx=0, _mouth_lefty=0,mouth_leftx, mouth_lefty;  
+        int _mouth_leftx=0, _mouth_lefty=0,mouth_leftx, mouth_lefty;
         int _mouth_downx=0,_mouth_downy=0,mouth_downx,mouth_downy;
         int _mouth_upx=0,_mouth_upy=0,mouth_upx,mouth_upy;
         int _sellionx=0,_selliony=0,sellionx,selliony;
@@ -234,7 +235,7 @@ int main(int argc, char* argv[])
         {
 	  // istringstream in;
 	  //string tmp;
-	  
+
             // Grab a frame
             cv::Mat temp,gray,dst;
             cap >> dst;
@@ -245,7 +246,7 @@ int main(int argc, char* argv[])
             cvtColor( temp, gray, CV_BGR2GRAY );
             cv_image<bgr_pixel> cimg(temp);
 
-            // Detect faces 
+            // Detect faces
             std::vector<rectangle> faces = detector(cimg);
 
 	    ///if face detection failed output #####
@@ -256,16 +257,16 @@ int main(int argc, char* argv[])
             for (unsigned long i = 0; i < faces.size(); ++i)
             {
                 full_object_detection shape = pose_model(cimg, faces[i]);
-                cv::Rect l(shape.part(36).x()-5,shape.part(36).y()-20,(shape.part(39).x()-shape.part(36).x())+10,40);             
-                cv::Rect r(shape.part(42).x()-5,shape.part(42).y()-20,(shape.part(45).x()-shape.part(42).x())+10,40);    
-        
+                cv::Rect l(shape.part(36).x()-5,shape.part(36).y()-20,(shape.part(39).x()-shape.part(36).x())+10,40);
+                cv::Rect r(shape.part(42).x()-5,shape.part(42).y()-20,(shape.part(45).x()-shape.part(42).x())+10,40);
+
                 nosex=shape.part(NOSE).x();nosey=shape.part(NOSE).y();
                 right_eyex=shape.part(RIGHT_EYE).x(); right_eyey=shape.part(RIGHT_EYE).y();
                 left_eyex=shape.part(LEFT_EYE).x(); left_eyey=shape.part(LEFT_EYE).y();
                 right_sidex=shape.part(RIGHT_SIDE).x(); right_sidey=shape.part(RIGHT_SIDE).y();
                 left_sidex=shape.part(LEFT_SIDE).x(); left_sidey=shape.part(LEFT_SIDE).y();
                 mouth_rightx=shape.part(MOUTH_RIGHT).x(); mouth_righty=shape.part(MOUTH_RIGHT).y();
-                mouth_leftx=shape.part(MOUTH_LEFT).x(); mouth_lefty=shape.part(MOUTH_LEFT).y();  
+                mouth_leftx=shape.part(MOUTH_LEFT).x(); mouth_lefty=shape.part(MOUTH_LEFT).y();
                 mouth_downx=shape.part(MOUTH_DOWN).x(); mouth_downy=shape.part(MOUTH_DOWN).y();
                 mouth_upx=shape.part(MOUTH_UP).x(); mouth_upy=shape.part(MOUTH_UP).y();
                 sellionx=shape.part(SELLION).x(); selliony=shape.part(SELLION).y();
@@ -283,7 +284,7 @@ int main(int argc, char* argv[])
 
                 double dl=(shape.part(39).x()-shape.part(36).x());
                 double dr=(shape.part(45).x()-shape.part(42).x());
-        
+
                 std::vector<cv::Point2f> detected_points;
                 detected_points.push_back(cv::Point(sellionx,selliony));
                 detected_points.push_back(cv::Point(right_eyex,right_eyey));
@@ -293,15 +294,15 @@ int main(int argc, char* argv[])
                 detected_points.push_back(cv::Point(mentonx,mentony));
                 detected_points.push_back(cv::Point(nosex,nosey));
                 detected_points.push_back(cv::Point(stomionx,stomiony));
-    
+
                 cv::solvePnP(cv::Mat(head_points),cv::Mat(detected_points),intrinsics, distortion, rvec, tvec, false,cv::ITERATIVE);
                 cv::projectPoints(framePoints, rvec, tvec, intrinsics, distortion, imageFramePoints );
-        
+
                 double theta = cv::norm(rvec);
                 double rx=rvec.at<double>(0,0);
                 double ry=rvec.at<double>(1,0);
                 double rz=rvec.at<double>(2,0);
-        
+
                 line(temp, cv::Point((int)imageFramePoints[0].x,(int)imageFramePoints[0].y), cv::Point((int)imageFramePoints[1].x,(int)imageFramePoints[1].y), cv::Scalar(255,0,0),2,8 );
                 line(temp, cv::Point((int)imageFramePoints[0].x,(int)imageFramePoints[0].y), cv::Point((int)imageFramePoints[2].x,(int)imageFramePoints[2].y), cv::Scalar(0,255,0),2,8 );
                 line(temp, cv::Point((int)imageFramePoints[0].x,(int)imageFramePoints[0].y), cv::Point((int)imageFramePoints[3].x,(int)imageFramePoints[3].y), cv::Scalar(0,0,255),2,8 );
@@ -309,12 +310,12 @@ int main(int argc, char* argv[])
                 left=gray(l);right=gray(r);
                 equalizeHist( left, left );     //histogram equalisation
 
-                pupiltracker::findPupilEllipse(params, left, out1, log1); 
+                pupiltracker::findPupilEllipse(params, left, out1, log1);
                 pupiltracker::cvx::cross(left, out1.pPupil, 40, pupiltracker::cvx::rgb(255,255,0));
                 cv::ellipse(left, out1.elPupil, pupiltracker::cvx::rgb(255,0,255));
-       
-                equalizeHist(right,right);   
-                pupiltracker::findPupilEllipse(params, right, out, log); 
+
+                equalizeHist(right,right);
+                pupiltracker::findPupilEllipse(params, right, out, log);
                 pupiltracker::cvx::cross(right, out.pPupil, 40, pupiltracker::cvx::rgb(255,255,0));
                 cv::ellipse(right, out.elPupil, pupiltracker::cvx::rgb(255,0,255));
 
@@ -339,16 +340,16 @@ int main(int argc, char* argv[])
 		  //  ofs<<"str";
 		  //else
 		  //  ofs<<"end";
-		
-		
+
+
 	        double yaw = 120*double(left_eyex-lX)/(left_eyex-eyebrow_leftx)-45;
 		double yaw2 = 100*double(right_eyex-rX)/((right_eyex-eyebrow_rightx)*0.9)-45;
 		int iyaw=yaw*1.3;
-		
-		
+
+
 		if(iyaw<0){
 		  ofs<<'-';
-		   ofs.flush(); 
+		   ofs.flush();
 		}
 		else{
 		  ofs<<'+';
@@ -361,10 +362,10 @@ int main(int argc, char* argv[])
 		//	ofs.flush();
 		//	fflush(ofs);
 		//ofs<<endl;
-		
+
 		      //	ofs<<90*double(left_eyex-lX)/((left_eyex-eyebrow_leftx)*0.7)-45;
 		      //	ofs<<endl;
-		
+
 		double pitch = double(lY-left_eyey)/((eyebrow_lefty-left_eyey))*100;
 		int ipitch=pitch;
 		if(ipitch<0){
@@ -417,9 +418,9 @@ int main(int argc, char* argv[])
                 cv::circle(temp,cv::Point(mouth_center_upx,mouth_center_upy),2,cv::Scalar(0,255,0),-1);//mouth center top
                 cv::circle(temp,cv::Point(mouth_center_downx,mouth_center_downy),2,cv::Scalar(0,255,0),-1);//mouth center bottom
                 cv::circle(temp,cv::Point(mentonx,mentony),2,cv::Scalar(0,255,0),-1);//Menton
-        
+
                 cv::circle(temp,cv::Point(lX,lY),5,cv::Scalar(0,0,255),0);
-                cv::circle(temp,cv::Point(rX,rY),5,cv::Scalar(0,0,255),0);    
+                cv::circle(temp,cv::Point(rX,rY),5,cv::Scalar(0,0,255),0);
 
             }
             cv::imshow("image",temp);
