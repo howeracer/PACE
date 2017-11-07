@@ -21,10 +21,17 @@
 #include "opencv2/opencv.hpp"
 #include <time.h>
 
+#include <termios.h>
 #include <stdio.h>
 #include <string>
 #include <math.h>
 #include <cmath>
+
+////
+#include <fstream>
+#include <iostream>
+#include <unistd.h>
+////
 
 using namespace dlib;
 using namespace std;
@@ -64,17 +71,58 @@ int main(int argc, char* argv[])
 {
    if(argc <= 1) 
    {
-     
     std::cerr<<"Use ./DisplayImage dev_port_no boad_size"<<endl;
     return 1;
-  }
+   }
+   
+   ////
+   FILE *file;
+   std::ofstream ofs;
+   //  ofs.open("test.txt",std::ofstream::out | std::ofstream::app);
+   
+     ofs.open("/dev/ttyACM0",std::ofstream::out |std::ofstream::app);
+  
+   if (!ofs.is_open())
+  {
+    //  ofs << "lorem ipsum";
+    //std::cout << "Output operation successfully performed\n";
+    //ofs.close();
+  std:cerr << "Stream did not open" << std::endl;
+    return -1;
+    }
 
+
+   /*
+   struct termios port_settings;
+   
+   cfsetispeed(&port_settings, B115200);    // set baud rates
+   cfsetospeed(&port_settings, B115200);
+
+   port_settings.c_cflag &= ~PARENB;    // set no parity, stop bits, data bits
+   port_settings.c_cflag &= ~CSTOPB;
+   port_settings.c_cflag &= ~CSIZE;
+   port_settings.c_cflag |= CS8;
+	
+   tcsetattr(fd, TCSANOW, &port_settings);    // apply the settings to the port
+   */
+   // ofs.close();
+   /*
+   file = fopen("angle.txt","w");  //Opening device file
+   fprintf(file,"%s","dlf;asnfsa");
+   fclose(file);
+   file = fopen("angle.txt","w");
+   fprintf(file,"%s"," onffw");
+   */
+   // fclose(file);
+   ////
     int video_source;
     std::istringstream video_sourceCmd(argv[1]);
      // Check if it is indeed a number
      if(!(video_sourceCmd >> video_source)){ cout<<"wrong video port no.!!"<<endl;return 1;}  
     
      cv::VideoCapture cap(video_source);
+     // cv::VideoCapture cap(1);
+     //cout<<video_source;
 
      cv::FileStorage fs;
     fs.open(filename, cv::FileStorage::READ);
@@ -86,15 +134,10 @@ int main(int argc, char* argv[])
     // close the input file
     fs.release();
 
-
-
-
     std::vector<cv::Point3f> head_points;
     cv::Mat rvec = cv::Mat(cv::Size(3,1), CV_64F);
     CvMat r;
-    cv::Mat tvec = cv::Mat(cv::Size(3,1), CV_64F);
-
-    
+    cv::Mat tvec = cv::Mat(cv::Size(3,1), CV_64F);  
 
     head_points.push_back(P3D_SELLION);
     head_points.push_back(P3D_RIGHT_EYE);
@@ -104,15 +147,18 @@ int main(int argc, char* argv[])
     head_points.push_back(P3D_MENTON);
     head_points.push_back(P3D_NOSE);
     head_points.push_back(P3D_STOMMION);
-
-
-
-
-int n=0,m=0;
+    
+    //  fprintf(file,"%s","dsad");
+    //fclose(file);
+    //  fprintf(file,"%c",'c');
+    //fclose(file);
+    int n=0,m=0;
 
     try
     {
-
+      //  ofs<<'c';
+      //  ofs<<endl;
+      
         cap.set( CV_CAP_PROP_FRAME_WIDTH, 640 );
         cap.set( CV_CAP_PROP_FRAME_HEIGHT, 480 );        
         //image_window win;
@@ -143,8 +189,6 @@ int n=0,m=0;
         pupiltracker::findPupilEllipse_out out,out1;
         pupiltracker::tracker_log log,log1;
 
-        
-
         std::vector<cv::Point2f> imageFramePoints;
         std::vector<cv::Point3f> framePoints;
 
@@ -174,8 +218,23 @@ int n=0,m=0;
         int _mentonx=0, _mentony=0,mentonx, mentony;
         float _stomionx=0,_stomiony=0,stomionx,stomiony;
         double check1yl,check1yr;
+
+	/*
+	while(1){
+	  istringstream in;
+	  string tmp;
+	  in>>tmp;
+	  if(tmp!="a"){usleep(1000); continue;}
+	  else
+	    break;
+	}
+	*/
+
         while(1)
         {
+	  // istringstream in;
+	  //string tmp;
+	  
             // Grab a frame
             cv::Mat temp,gray,dst;
             cap >> dst;
@@ -188,6 +247,10 @@ int n=0,m=0;
 
             // Detect faces 
             std::vector<rectangle> faces = detector(cimg);
+
+	    ///if face detection failed output #####
+	    if(faces.size()==0)
+	      ofs<<"#####"<<endl;
             // Find the pose of each face.
             std::vector<full_object_detection> shapes;
             for (unsigned long i = 0; i < faces.size(); ++i)
@@ -230,8 +293,6 @@ int n=0,m=0;
                 detected_points.push_back(cv::Point(mentonx,mentony));
                 detected_points.push_back(cv::Point(nosex,nosey));
                 detected_points.push_back(cv::Point(stomionx,stomiony));
-
-
     
                 cv::solvePnP(cv::Mat(head_points),cv::Mat(detected_points),intrinsics, distortion, rvec, tvec, false,cv::ITERATIVE);
                 cv::projectPoints(framePoints, rvec, tvec, intrinsics, distortion, imageFramePoints );
@@ -245,35 +306,105 @@ int n=0,m=0;
                 line(temp, cv::Point((int)imageFramePoints[0].x,(int)imageFramePoints[0].y), cv::Point((int)imageFramePoints[2].x,(int)imageFramePoints[2].y), cv::Scalar(0,255,0),2,8 );
                 line(temp, cv::Point((int)imageFramePoints[0].x,(int)imageFramePoints[0].y), cv::Point((int)imageFramePoints[3].x,(int)imageFramePoints[3].y), cv::Scalar(0,0,255),2,8 );
 
-
                 left=gray(l);right=gray(r);
                 equalizeHist( left, left );     //histogram equalisation
-
 
                 pupiltracker::findPupilEllipse(params, left, out1, log1); 
                 pupiltracker::cvx::cross(left, out1.pPupil, 40, pupiltracker::cvx::rgb(255,255,0));
                 cv::ellipse(left, out1.elPupil, pupiltracker::cvx::rgb(255,0,255));
-
-
        
                 equalizeHist(right,right);   
                 pupiltracker::findPupilEllipse(params, right, out, log); 
                 pupiltracker::cvx::cross(right, out.pPupil, 40, pupiltracker::cvx::rgb(255,255,0));
                 cv::ellipse(right, out.elPupil, pupiltracker::cvx::rgb(255,0,255));
 
-
                 //Left Pupil center
                 lX=out.elPupil.center.x+shape.part(42).x()-5;
                 lY=out.elPupil.center.y+shape.part(42).y()-20;
-
+		////
+		//      ofs<<lX;
+		//      ofs<<' ';
+		//      ofs<<lY;
+		//      ofs<<' ';
+		//      ofs<<endl;
+		///
+		if(mouth_center_downy-mouth_center_upy<=10){
+		  ofs<<"#####"<<endl;
+		  continue;
+		}
+		///
+		if(mouth_center_downy-mouth_center_upy>10){
+	  // start=true;
+		  // if(start==true)
+		  //  ofs<<"str";
+		  //else
+		  //  ofs<<"end";
+		
+		
+	        double yaw = 120*double(left_eyex-lX)/(left_eyex-eyebrow_leftx)-45;
+		double yaw2 = 100*double(right_eyex-rX)/((right_eyex-eyebrow_rightx)*0.9)-45;
+		int iyaw=yaw*1.3;
+		
+		
+		if(iyaw<0){
+		  ofs<<'-';
+		   ofs.flush(); 
+		}
+		else{
+		  ofs<<'+';
+		   ofs.flush();
+		}if(abs(iyaw)<10){
+		  ofs<<'0';
+		  ofs.flush();
+		}
+		ofs<<abs(iyaw);
+		//	ofs.flush();
+		//	fflush(ofs);
+		//ofs<<endl;
+		
+		      //	ofs<<90*double(left_eyex-lX)/((left_eyex-eyebrow_leftx)*0.7)-45;
+		      //	ofs<<endl;
+		
+		double pitch = double(lY-left_eyey)/((eyebrow_lefty-left_eyey))*100;
+		int ipitch=pitch;
+		if(ipitch<0){
+		  ofs<<'-';
+		  	  ofs.flush();
+		}
+		else{
+		  ofs<<'+';
+		    ofs.flush();
+		}
+		if(abs(ipitch)<10){
+		  ofs<<'0';
+		    ofs.flush();
+		}
+		ofs<<abs(ipitch);
+		ofs.flush();
+		ofs<<"+00$";
+		ofs.flush();
+		ofs<<endl;
+		ofs.flush();
+	}
                 //Right Pupil Center
                 rX=out1.elPupil.center.x+shape.part(36).x()-5;
                 rY=out1.elPupil.center.y+shape.part(36).y()-20;
+		////
+		//  fprintf(file,"%d",data[i]); //Writing to the file
+		//      ofs<<rX;
+		//      ofs<<' ';
+		//      ofs<<rY;
+		//      ofs<<' ';
+		//      ofs<<right_sidex;
+		//      ofs<<' ';
+		//      ofs<<right_sidey;
+		//      ofs<<endl;
+		////
 
 
                 cv::circle(temp,cv::Point(nosex,nosey),2,cv::Scalar(0,255,0),-1);//nose
                 cv::circle(temp,cv::Point(right_eyex,right_eyey),2,cv::Scalar(0,255,0),-1);//right eye
-                cv::circle(temp,cv::Point(left_eyex,left_eyey),2,cv::Scalar(0,255,0),-1);//left eye
+	        cv::circle(temp,cv::Point(left_eyex,left_eyey),2,cv::Scalar(0,255,0),-1);//left eye
                 cv::circle(temp,cv::Point(right_sidex,right_sidey),2,cv::Scalar(0,255,0),-1);//right side
                 cv::circle(temp,cv::Point(left_sidex,left_sidey),2,cv::Scalar(0,255,0),-1);//left side
                 cv::circle(temp,cv::Point(eyebrow_rightx,eyebrow_righty),2,cv::Scalar(0,255,0),-1);//eyebrow right
@@ -314,6 +445,12 @@ int n=0,m=0;
     {
         cout << e.what() << endl;
     }
+
+    ////
+     fclose (file);
+     ofs.close();
+    ////
+
 }
 
 /*

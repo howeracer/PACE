@@ -1,0 +1,3 @@
+/home/j/pupiltracker/build/cmd/CMakeFiles/PupilTrackerCmd.dir
+/home/j/pupiltracker/build/cmd/dlib_build/CMakeFiles/dlib.dir
+/home/j/pupiltracker/build/lib/CMakeFiles/pupiltracker.dir
