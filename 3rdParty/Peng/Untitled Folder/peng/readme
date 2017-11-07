@@ -1,0 +1,15 @@
+The code is implemented in C++11, the algorithm is based on BFS
+
+the code could be compiled by 
+make
+
+run as
+./my_maze_program input_file.txt
+
+input_file.txt is the input file
+
+the output will be printed as two part: the first part is a graphical depiction
+of the solution.
+the second part is a listing of the row, column values for the result.
+If there is no possible solution, the only thing output to the screen is 
+"unsolvable"

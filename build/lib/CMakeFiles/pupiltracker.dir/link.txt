@@ -1,0 +1,2 @@
+/usr/bin/ar cr libpupiltracker.a  CMakeFiles/pupiltracker.dir/PupilTracker.cpp.o CMakeFiles/pupiltracker.dir/cvx.cpp.o CMakeFiles/pupiltracker.dir/utils.cpp.o
+/usr/bin/ranlib libpupiltracker.a

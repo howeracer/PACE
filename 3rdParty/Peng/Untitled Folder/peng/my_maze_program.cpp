@@ -1,0 +1,191 @@
+#include <iostream>
+#include <vector>
+#include <fstream>
+#include <string>
+#include <queue>
+
+using namespace std;
+
+class point{
+public:
+  int x;
+  int y;
+  point *prev; //previous step
+
+  point(int xval, int yval){
+    x=xval;
+    y=yval;
+    prev=NULL;
+  }
+};
+
+using std::cin;
+using std::cout;
+using std::pair;
+using std::make_pair;
+using std::vector;
+
+
+void Solve_Maze(vector<vector<char> > &maze, point *start, vector<vector<bool> > &visited, vector<pair<int ,int> > &solution, bool &Solved){
+  int m=maze.size();
+  if(m==0) return;
+  int n=maze[0].size();
+  if(n==0) return;
+ 
+  queue<point*> q;
+  q.push(start);
+
+  vector<vector<int> > dirs={{0,-1},{0,1},{-1,0},{1,0}};
+
+  while(!q.empty()){
+    point *front = q.front();
+
+    // cout<< front->x<<' '<<front->y<<endl;
+
+    visited[front->x][front->y]=true;
+
+    q.pop();
+    if(maze[front->x][front->y]=='f'){
+      Solved = true;
+      solution.push_back(make_pair(front->x,front->y));
+      //solution[front->x][front->y]
+      point *lastPoint = front;
+       front = front->prev;
+      
+       // cout<< front->x <<' '<< front->y << endl;
+      
+       while((lastPoint->x!=start->x)||(lastPoint->y!=start->y)){
+	if(lastPoint->x - front->x == 1){
+	  solution.push_back(make_pair(front->x,front->y));
+	}
+	else if(lastPoint->x - front->x == -1){
+	  solution.push_back(make_pair(front->x,front->y));
+	}
+	else if(lastPoint->y - front->y == 1){
+	  solution.push_back(make_pair(front->x,front->y));
+	}
+	else if(lastPoint->y - front->y == -1){
+	  solution.push_back(make_pair(front->x,front->y));
+	}
+	lastPoint = front;
+	front = front->prev;
+      }
+       solution.push_back(make_pair(start->x,start->y));
+      break;
+    }
+    else{
+      // cout<<"test"<<endl;
+      for(int i=0;i<4;i++){
+	point *tmp = new point(0,0);
+	tmp->x = front->x + dirs[i][0];
+	tmp->y = front->y + dirs[i][1];
+	
+	if(tmp->x<0||tmp->y<0||tmp->x>=maze.size()||tmp->y>=maze[0].size()) continue;
+	if(visited[tmp->x][tmp->y]) continue;
+	if(maze[tmp->x][tmp->y]=='.'||maze[tmp->x][tmp->y]=='f'){
+	  //cout<<tmp->x<<' ';
+	  //cout<<tmp->y<<endl;
+	  //visited[tmp->x][tmp->y]=true;
+	  tmp->prev = front;
+	  q.push(tmp);
+	  //a[tmp->x][tmp->y] = ;
+	}
+      }
+    }
+
+  }
+  
+}
+
+int main(int argc, char* argv[])
+{
+  
+    int m;
+    //pair <int, int> p;
+    vector< vector<char> > maze;
+    vector<char> tmp;
+    string line;
+    
+    if(argc < 2){
+      std::cerr <<"input error"<<std::endl;
+    }
+    // string input = argv[1];
+    
+    ifstream myfile(argv[1]);
+    // myfile.open(input);
+    if(myfile.is_open()){
+      while(getline(myfile,line)){
+        m=line.size();
+	//cout<<m<<' ';
+	for(int i=0;i<m;i++){
+	  tmp.push_back(line[i]);
+	}
+	maze.push_back(tmp);
+	tmp.clear();
+      }
+      myfile.close();
+    }
+    else cout << "Unable to open file.";
+    
+    int n=maze.size();
+    point *p;
+    for(int i=0;i<n;i++){
+      for(int j=0;j<m;j++){
+	if(maze[i][j]=='o'){
+	  p = new point(i,j);
+	}
+	//	 cout << maze[i][j];
+      }
+      //cout<<endl;
+    }
+    
+    
+    //  cout<<p.first<<','<<p.second;
+   // cout << dfs(maze, p) << std::endl;
+   // cout << bfs(maze,p);
+    m=maze.size();
+    n=maze[0].size();
+    vector<vector<bool> > visited(m, vector<bool>(n,false));
+    vector<pair<int ,int> > solution;
+    bool Solved=false;
+    
+    Solve_Maze(maze, p, visited, solution, Solved);
+    
+    if(Solved){
+      /*
+      for(int i=0;i<maze.size();i++){
+	for(int j=0;j<maze[0].size();j++){
+		 cout << maze[i][j];
+	}
+       cout<<endl;
+      }
+      cout<<endl;
+      */
+      maze[p->x][p->y]='.';
+      
+      for(int k=solution.size()-1;k>=0;k--){
+	char tmp=maze[solution[k].first][solution[k].second];
+	maze[solution[k].first][solution[k].second]='o';
+	for(int i=0;i<maze.size();i++){
+	  for(int j=0;j<maze[0].size();j++){
+	     //	if(maze[i][j]=='o')
+		  //  p=make_pair(i,j);
+		cout << maze[i][j];
+	   }
+	   cout<<endl;
+	 }
+	 maze[solution[k].first][solution[k].second]=tmp;
+	 cout<<endl;
+      }
+      
+      for(int i=solution.size()-1;i>=0;i--){
+	cout<<solution[i].first<<','<<solution[i].second<<endl;
+	}
+      
+    }
+    else{
+      cout<<"unsolvable"<<endl;
+    }
+    
+    return 0;
+}
