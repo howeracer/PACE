@@ -2,6 +2,7 @@
 #include <SD.h>
 
 // Variables for parsing
+int static number = 1;
 String buf;
 String buf1;
 String buf2;
@@ -9,11 +10,13 @@ String buf3;
 int angle1 = 0;
 int angle2 = 0;
 int angle3 = 0;
+int countAnglesRecorded = 0;
+int countButtonPresses = 0;
 
 
 // Variables for SD writing
 const int cs = 10; // chip select pin
-File myFile;
+File static myFile;
 
 //Opens up communication line with laptop
 void setupComputerComm();
@@ -40,17 +43,51 @@ void setup() {
   
   setupSD();
   // May put inside setupSD()
-  myFile = SD.open("string.txt", FILE_WRITE);
+ while (nameFile() == false)
+ {
+  nameFile();
+ }
   
 }
 
 void loop() {
-  getAngleData(); //When call this function, waits inside until receives data
-  writeAnglesToSD();
+    getAngleData(); //When call this function, waits inside until receives data
+//  Serial.print("Hello");
+
+/*    if (angle1==0 && angle2==0 && angle3==0){
+      delay(1000);
+    }
     
-  digitalWrite(13,HIGH);
-  delay(2000);
-  digitalWrite(13,LOW);
+    else{
+    */
+      Serial.print(angle1);
+      Serial.print(',');
+      Serial.print(angle2);
+      Serial.print(',');
+      Serial.println(angle3);
+      writeAnglesToSD();
+
+      countAnglesRecorded++;
+
+      if(countAnglesRecorded==5){
+        Serial.println("******");
+        myFile.println("******");
+        countButtonPresses++;
+        countAnglesRecorded= 0;
+      }
+
+      if(countButtonPresses==3){
+        myFile.println("Finished");
+        myFile.close();
+        Serial.println("Finished");
+        while(1){}
+       } 
+    
+//    digitalWrite(13,HIGH);
+      delay(1000);
+//    digitalWrite(13,LOW);
+  //  }
+
 }
 
 
@@ -103,11 +140,11 @@ void removeCommas(){
 
 void parseAngles(){
   //Parse out each angle
-    buf1 = buf.substring(0, 3);
-    buf2 = buf.substring(3, 6);
+    buf1 = buf.substring(0,3);
+    buf2 = buf.substring(3,6);
     buf3 = buf.substring(6,9);
 }
-
+//eventually want to convert to floating point numbers
 void convertToInt(){
   //Convert each string to an int
     angle1 = buf1.toInt();
@@ -116,12 +153,12 @@ void convertToInt(){
 }
 
 void writeAnglesToSD(){
-    myFile.print(angle1, DEC);
+    myFile.print(angle1);
     myFile.print(',');
-    myFile.print(angle2,DEC);
+    myFile.print(angle2);
     myFile.print(',');
-    myFile.print(angle3,DEC);
-    myFile.close();
+    myFile.println(angle3);
+   // myFile.close();
 }
 
 void getAngleData(){
@@ -133,3 +170,16 @@ void getAngleData(){
     convertToInt();
   }
 }
+boolean nameFile(){
+  char myFileName[13];
+  strcat(myFileName, "test");
+  strcat(myFileName, number);
+  strcat(myFileName, ".txt");
+  if (SD.open(myFileName, FILE_READ)){
+    number++;
+    return false;
+  }
+  myFile = SD.open(myFileName, FILE_WRITE);
+  return true;
+}
+
